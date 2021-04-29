@@ -393,7 +393,7 @@ class Shopware_Controllers_Frontend_Checkout extends Enlight_Controller_Action i
             $this->session['sComment'] = trim(strip_tags($this->Request()->getParam('sComment')));
         }
 
-        $basket = $this->View()->sBasket;
+        $basket = $this->View()->getAssign('sBasket');
         $agreements = $this->getInvalidAgreements($basket, $this->Request());
 
         if (!empty($agreements)) {
@@ -502,13 +502,21 @@ class Shopware_Controllers_Frontend_Checkout extends Enlight_Controller_Action i
             $this->session['sComment'] = trim(strip_tags($this->Request()->getParam('sComment')));
         }
 
-        if (!Shopware()->Config()->get('IgnoreAGB') && !$this->Request()->getParam('sAGB')) {
-            $this->View()->assign('sAGBError', true);
+        $this->View()->assign($this->session['sOrderVariables']->getArrayCopy());
 
-            return $this->forward('confirm');
+        $agreements = $this->getInvalidAgreements($this->View()->getAssign('sBasket'), $this->Request());
+
+        if (!empty($agreements)) {
+            $this->View()->assign('sAGBError', array_key_exists('agbError', $agreements));
+
+            return $this->forward(
+                'confirm',
+                null,
+                null,
+                ['agreementErrors' => $agreements]
+            );
         }
 
-        $this->View()->assign($this->session['sOrderVariables']->getArrayCopy());
         $this->View()->assign('sAGBError', false);
 
         if (empty($this->View()->sPayment['embediframe'])
@@ -1910,7 +1918,7 @@ class Shopware_Controllers_Frontend_Checkout extends Enlight_Controller_Action i
             return false;
         }
 
-        $attrName = $config->serviceAttrField;
+        $attrName = $config->offsetGet('serviceAttrField');
         if (empty($attrName) || !isset($basket['content'])) {
             return false;
         }
