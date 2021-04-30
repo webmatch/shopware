@@ -88,7 +88,7 @@ class CustomerNumberSearchTest extends TestCase
         }, $searchResult->getCustomers());
     }
 
-    private static function customerFromNumber(string $customerNumber = 'none'): array
+    protected static function customerFromNumber(string $customerNumber = 'none'): array
     {
         return [
             'number' => $customerNumber,
