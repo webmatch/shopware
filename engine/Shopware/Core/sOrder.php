@@ -24,6 +24,7 @@
 
 use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 use Shopware\Components\NumberRangeIncrementerInterface;
+use Shopware\Models\Article\Detail;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Mail\Mail;
 use Shopware\Models\Shop\Shop;
@@ -1883,13 +1884,20 @@ EOT;
      */
     private function refreshOrderedVariant($orderNumber, $quantity)
     {
-        $this->db->executeUpdate(
-            'UPDATE s_articles_details
-             SET sales = sales + :quantity,
-                 instock = instock - :quantity
-             WHERE ordernumber = :number',
-            [':quantity' => $quantity, ':number' => $orderNumber]
-        );
+        $detail = $this->modelManager->getRepository(Detail::class)->findOneBy([
+            'number' => $orderNumber
+        ]);
+
+        if (!$detail instanceof Detail) {
+            return;
+        }
+
+        $detail
+            ->setInStock($detail->getInStock() - $quantity)
+            ->setSales($detail->getInStock() + $quantity);
+
+        $this->modelManager->persist($detail);
+        $this->modelManager->flush();
 
         $this->eventManager->notify(
             'product_stock_was_changed',
