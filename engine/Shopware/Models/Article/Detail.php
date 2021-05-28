@@ -315,6 +315,13 @@ class Detail extends ModelEntity
      */
     private $shippingTime;
 
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="sales", type="integer", nullable=false)
+     */
+    private $sales;
+
     public function __construct()
     {
         $this->prices = new ArrayCollection();
@@ -944,5 +951,25 @@ class Detail extends ModelEntity
     public function setImages($images)
     {
         return $this->setOneToMany($images, Image::class, 'images', 'articleDetail');
+    }
+
+    /**
+     * @return int
+     */
+    public function getSales()
+    {
+        return $this->sales;
+    }
+
+    /**
+     * @param int $sales
+     *
+     * @return Detail
+     */
+    public function setSales(int $sales)
+    {
+        $this->sales = $sales;
+
+        return $this;
     }
 }
